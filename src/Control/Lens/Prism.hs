@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE DefaultSignatures #-}
 #ifdef TRUSTWORTHY
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -45,6 +46,18 @@ import Control.Lens.Internal.Setter
 import Control.Lens.Type
 import Control.Monad
 import Data.Bifunctor
+import qualified Data.ByteString as Strict
+import qualified Data.ByteString.Lazy as Lazy
+import qualified Data.HashSet as HashSet
+import qualified Data.HashSet as HashSet
+import qualified Data.IntMap as IntMap
+import qualified Data.IntSet as IntSet
+import qualified Data.Map as Map
+import qualified Data.Sequence as Seq
+import qualified Data.Set as Set
+import qualified Data.Text as Text
+import qualified Data.Vector as Vector
+import Data.Monoid
 import Data.Profunctor
 import Data.Void
 #ifndef SAFE
@@ -270,3 +283,27 @@ _Void = prism absurd Left
 only :: Eq a => a -> Prism' a ()
 only a = prism' (\() -> a) $ guard . (a ==)
 {-# INLINE only #-}
+
+------------------------------------------------------------------------------
+-- Common Prisms
+------------------------------------------------------------------------------
+
+nearly :: a -> (a -> Bool) -> Prism' a ()
+nearly a p = prism' (const a) (\x -> if p x then Just () else Nothing)
+
+class AsEmpty a where
+  _Empty :: Prism' a ()
+  default _Empty :: (Monoid a, Eq a) => Prism' a ()
+  _Empty = nearly mempty (== mempty)
+
+instance AsEmpty (IntMap.IntMap v)      where _Empty = nearly IntMap.empty  IntMap.null
+instance AsEmpty (Map.Map k v)          where _Empty = nearly Map.empty     Map.null
+instance AsEmpty (Seq.Seq a)            where _Empty = nearly Seq.empty     Seq.null
+instance AsEmpty [a]                    where _Empty = nearly []            null
+instance AsEmpty (Vector.Vector a)      where _Empty = nearly Vector.empty  Vector.null
+instance AsEmpty (Set.Set a)            where _Empty = nearly Set.empty     Set.null
+instance AsEmpty IntSet.IntSet          where _Empty = nearly IntSet.empty  IntSet.null
+instance AsEmpty (HashSet.HashSet a)    where _Empty = nearly HashSet.empty HashSet.null
+instance AsEmpty Strict.ByteString      where _Empty = nearly Strict.empty  Strict.null
+instance AsEmpty Lazy.ByteString        where _Empty = nearly Lazy.empty    Lazy.null
+instance AsEmpty Text.Text              where _Empty = nearly Text.empty    Text.null
