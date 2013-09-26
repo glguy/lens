@@ -35,7 +35,7 @@ import Control.Lens
 import Data.List (nub)
 import Data.Monoid
 import Data.Vector.Generic as V hiding (zip, filter, indexed)
-import Data.Vector.Fusion.Stream (Stream)
+import Data.Vector.Fusion.Bundle (Bundle)
 import Data.Vector.Generic.New (New)
 import Prelude hiding ((++), length, null, head, tail, init, last, map, reverse)
 
@@ -83,13 +83,13 @@ vector = iso fromList V.toList
 {-# INLINE vector #-}
 
 -- | Convert a 'Vector' to a finite 'Stream' (or back.)
-asStream :: Vector v a => Iso' (v a) (Stream a)
+asStream :: Vector v a => Iso' (v a) (Bundle v a)
 asStream = iso stream unstream
 {-# INLINE asStream #-}
 
 -- | Convert a 'Vector' to a finite 'Stream' from right to left (or
 -- back.)
-asStreamR :: Vector v a => Iso' (v a) (Stream a)
+asStreamR :: Vector v a => Iso' (v a) (Bundle v a)
 asStreamR = iso streamR unstreamR
 {-# INLINE asStreamR #-}
 
